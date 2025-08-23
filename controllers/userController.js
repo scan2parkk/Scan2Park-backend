@@ -20,9 +20,11 @@ exports.getUserProfile = async (req, res) => {
 exports.getUserBookings = async (req, res) => {
   try {
     const now = new Date();
+    console.log(req.user.id);
+    
     const bookings = await Booking.find({
-      userId: req.user._id,
-      endTime: { $gte: now }, // Only active bookings
+      userId: req.user.id,
+      // endTime: { $gte: now }, // Only active bookings
     })
       .populate('locationId', 'name address')
       .populate('slotId', 'slotNumber');
@@ -35,7 +37,7 @@ exports.getUserBookings = async (req, res) => {
 // Get user booking history (all bookings, including past)
 exports.getUserBookingHistory = async (req, res) => {
   try {
-    const bookings = await Booking.find({ userId: req.user._id })
+    const bookings = await Booking.find({ userId: req.user.id })
       .populate('locationId', 'name address')
       .populate('slotId', 'slotNumber')
       .sort({ startTime: -1 }); // Sort by start time descending
