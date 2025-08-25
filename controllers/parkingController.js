@@ -13,7 +13,7 @@ exports.getLocations = async (req, res) => {
 
 exports.getSlots = async (req, res) => {
   try {
-    const slots = await ParkingSlot.find({ locationId: req.params.locationId, isAvailable: true });
+    const slots = await ParkingSlot.find({ locationId: req.params.locationId});
     res.json(slots);
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
