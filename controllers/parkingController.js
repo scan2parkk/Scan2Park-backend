@@ -20,6 +20,17 @@ exports.getSlots = async (req, res) => {
   }
 };
 
+// Get all slots
+exports.getAllSlots = async (req, res) => {
+  try {
+    const slots = await ParkingSlot.find().populate('locationId', 'name address');
+    res.json(slots);
+  } catch (error) {
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
+
 exports.bookSlot = async (req, res) => {
   const { locationId, slotId, startTime, endTime } = req.body;
   try {
