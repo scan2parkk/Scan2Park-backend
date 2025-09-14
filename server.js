@@ -13,7 +13,7 @@ const app = express();
 
 // Enable CORS
 app.use(cors({
-  origin: 'http://localhost:3000', // Allow requests from Next.js frontend
+  origin: ['http://localhost:3000','https://scan2-park-frontend.vercel.app'], // Allow requests from Next.js frontend
   methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
   allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
 }));
