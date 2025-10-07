@@ -141,3 +141,40 @@ exports.deleteBooking = async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 };
+
+
+exports.deleteLocation = async (req, res) => {
+  try {
+    const location = await ParkingLocation.findById(req.params.id);
+    if (!location) return res.status(404).json({ message: 'Location not found' });
+
+    // Check if there are any slots associated with this location
+    const slots = await ParkingSlot.find({ locationId: req.params.id });
+    if (slots.length > 0) {
+      return res.status(400).json({ message: 'Cannot delete location with associated slots' });
+    }
+
+    await ParkingLocation.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Location deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+exports.deleteSlot = async (req, res) => {
+  try {
+    const slot = await ParkingSlot.findById(req.params.id);
+    if (!slot) return res.status(404).json({ message: 'Slot not found' });
+
+    // Check if there are any bookings associated with this slot
+    const bookings = await Booking.find({ slotId: req.params.id });
+    if (bookings.length > 0) {
+      return res.status(400).json({ message: 'Cannot delete slot with active bookings' });
+    }
+
+    await ParkingSlot.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Slot deleted' });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
