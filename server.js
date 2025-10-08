@@ -1,6 +1,6 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const cors = require('cors'); // Add CORS package
+const cors = require('cors');
 const connectDB = require('./config/db');
 const authRoutes = require('./routes/auth');
 const parkingRoutes = require('./routes/parking');
@@ -13,13 +13,11 @@ const app = express();
 
 const stripe = Stripe(process.env.STRIPE_SECRET_KEY);
 
-// Enable CORS
 app.use(cors({
-  origin: ['http://localhost:3000','https://scan2-park-frontend.vercel.app'], // Allow requests from Next.js frontend
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
-  allowedHeaders: ['Content-Type', 'Authorization'], // Allowed headers
+  origin: ['http://localhost:3000', 'https://scan2-park-frontend.vercel.app'],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
 }));
-
 
 app.use(express.json());
 
@@ -30,17 +28,16 @@ connectDB();
 app.use('/api/auth', authRoutes);
 app.use('/api/parking', parkingRoutes);
 app.use('/api/admin', adminRoutes);
-app.use('/api/user', userRoutes); // Mount user routes
+app.use('/api/user', userRoutes);
 
-app.post('/create-checkout-session', async (req, res) => {
+app.post('/api/create-checkout-session', async (req, res) => {
   try {
-    // items = [{ name, amount, quantity }]
     const { items } = req.body;
-    const line_items = items.map(it => ({
+    const line_items = items.map((it) => ({
       price_data: {
-        currency: 'usd',            // change to your currency (amount is in cents)
+        currency: 'inr',
         product_data: { name: it.name },
-        unit_amount: it.amount,    // e.g. 5000 = $50.00 for USD
+        unit_amount: it.amount,
       },
       quantity: it.quantity,
     }));
@@ -49,7 +46,7 @@ app.post('/create-checkout-session', async (req, res) => {
       payment_method_types: ['card'],
       line_items,
       mode: 'payment',
-      success_url: `${process.env.FRONTEND_URL}/success?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.FRONTEND_URL}/parking-locations/${req.body.locationId}?session_id={CHECKOUT_SESSION_ID}`, // Include locationId in success URL
       cancel_url: `${process.env.FRONTEND_URL}/cancel`,
     });
 
@@ -61,15 +58,9 @@ app.post('/create-checkout-session', async (req, res) => {
 });
 
 app.get('/api/checkout-session', async (req, res) => {
-  const session = await stripe.checkout.sessions.retrieve(req.query.session_id);
-  res.json(session);
-});
-
-app.get("/checkout-session", async (req, res) => {
   const { session_id } = req.query;
-
   if (!session_id) {
-    return res.status(400).json({ error: "Missing session_id" });
+    return res.status(400).json({ error: 'Missing session_id' });
   }
 
   try {
